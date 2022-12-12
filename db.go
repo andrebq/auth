@@ -53,11 +53,12 @@ func InitDB(ctx context.Context, db *sql.DB) error {
 			primary key(uid),
 			unique(login))`,
 		`create table if not exists db_tokens(token_id text not null,
+			token_type text not null,
 			uid text not null,
 			salt blob not null,
 			token blob not null,
-			created_unix integer not null,
-			expires_at integer not null,
+			created_at_unix integer not null,
+			expires_at_unix integer not null,
 			primary key(token_id))`,
 	})
 }
@@ -110,8 +111,12 @@ func Login(ctx context.Context, db *sql.DB, login string, plainPass []byte) (str
 	return uid, nil
 }
 
-func randomSalt() ([]byte, error) {
-	var buf [8]byte
+func lookupActiveLogin(ctx context.Context, uid *string, db *sql.DB, login string) error {
+	return db.QueryRowContext(ctx, `select uid from db_users where login = ? and active = 1`, login).Scan(uid)
+}
+
+func randomSalt(sz int) ([]byte, error) {
+	buf := make([]byte, sz)
 	_, err := io.ReadFull(rand.Reader, buf[:])
 	if err != nil {
 		return nil, err
@@ -120,7 +125,7 @@ func randomSalt() ([]byte, error) {
 }
 
 func saltPassword(plain []byte) ([]byte, []byte, error) {
-	salt, err := randomSalt()
+	salt, err := randomSalt(8)
 	if err != nil {
 		return nil, nil, err
 	}
