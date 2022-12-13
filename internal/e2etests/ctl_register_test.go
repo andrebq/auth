@@ -2,6 +2,7 @@ package e2etests
 
 import (
 	"context"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -16,7 +17,7 @@ func TestRegister(t *testing.T) {
 		t.Fatal(err)
 	}
 	input := strings.NewReader("secure-password\n")
-	app := cmdlib.NewApp(input)
+	app := cmdlib.NewApp(io.Discard, input)
 	args := []string{"auth", "-d", tmpdir, "ctl", "register", "--login", "bob"}
 	ctx := context.Background()
 	err = app.RunContext(ctx, args)

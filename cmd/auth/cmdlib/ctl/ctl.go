@@ -8,14 +8,14 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func Cmd(dir *string, input io.Reader) *cli.Command {
+func Cmd(dir *string, output io.Writer, input io.Reader) *cli.Command {
 	return &cli.Command{
 		Name:  "ctl",
 		Usage: "Controls the auth database",
 		Subcommands: []*cli.Command{
 			registerUserCmd(dir, input),
 			updateUserCmd(dir, input),
-			tokenCtlCmd(dir),
+			tokenCtlCmd(dir, output),
 		},
 	}
 }

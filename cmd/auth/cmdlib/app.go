@@ -8,7 +8,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func NewApp(input io.Reader) *cli.App {
+func NewApp(output io.Writer, input io.Reader) *cli.App {
 	var dir string
 	return &cli.App{
 		Name:  "auth",
@@ -23,7 +23,7 @@ func NewApp(input io.Reader) *cli.App {
 			},
 		},
 		Commands: []*cli.Command{
-			ctl.Cmd(&dir, input),
+			ctl.Cmd(&dir, output, input),
 		},
 	}
 }

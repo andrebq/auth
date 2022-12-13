@@ -15,7 +15,7 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	app := cmdlib.NewApp(os.Stdin)
+	app := cmdlib.NewApp(os.Stdout, os.Stdin)
 	err := app.RunContext(ctx, os.Args)
 	if errors.Is(err, context.Canceled) {
 		err = nil

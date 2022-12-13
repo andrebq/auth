@@ -2,6 +2,7 @@ package e2etests
 
 import (
 	"context"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -25,7 +26,7 @@ func TestUpdate(t *testing.T) {
 	}
 	db.Close()
 	input := strings.NewReader("new-password\n")
-	app := cmdlib.NewApp(input)
+	app := cmdlib.NewApp(io.Discard, input)
 	args := []string{"auth", "-d", tmpdir, "ctl", "passwd", "--login", "bob"}
 	err = app.RunContext(ctx, args)
 	if err != nil {
