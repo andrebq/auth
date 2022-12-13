@@ -5,13 +5,18 @@ go 1.19
 require (
 	github.com/google/uuid v1.3.0
 	github.com/rs/zerolog v1.28.0
+	github.com/steinfletcher/apitest v1.5.14
+	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/uptrace/bun/driver/sqliteshim v1.1.9
 	github.com/urfave/cli/v2 v2.23.7
 	golang.org/x/crypto v0.4.0
 )
 
 require (
+	github.com/PaesslerAG/gval v1.0.0 // indirect
+	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/andrebq/auth/cmd/auth/cmdlib/ctl"
+	"github.com/andrebq/auth/cmd/auth/cmdlib/serve"
 	"github.com/urfave/cli/v2"
 )
 
@@ -24,6 +25,7 @@ func NewApp(output io.Writer, input io.Reader) *cli.App {
 		},
 		Commands: []*cli.Command{
 			ctl.Cmd(&dir, output, input),
+			serve.Cmd(&dir),
 		},
 	}
 }
