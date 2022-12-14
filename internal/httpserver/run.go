@@ -8,11 +8,28 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+func RunProxy(ctx context.Context, addr string, port uint, handler http.Handler) error {
+	log := log.Logger.With().Str("addr", addr).Uint("port", port).Str("kind", "proxy").Logger()
+	srv := http.Server{
+		Addr:              fmt.Sprintf("%v:%v", addr, port),
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      10 * time.Second,
+		ReadHeaderTimeout: time.Second,
+		MaxHeaderBytes:    10_000,
+		Handler:           handler,
+		BaseContext: func(l net.Listener) context.Context {
+			return ctx
+		},
+	}
+	return runServe(ctx, log, &srv)
+}
+
 func Run(ctx context.Context, addr string, port uint, handler http.Handler) error {
-	log := log.Logger.With().Str("addr", addr).Uint("port", port).Logger()
+	log := log.Logger.With().Str("addr", addr).Uint("port", port).Str("kind", "api").Logger()
 	srv := http.Server{
 		Addr:              fmt.Sprintf("%v:%v", addr, port),
 		ReadTimeout:       5 * time.Second,
@@ -24,6 +41,10 @@ func Run(ctx context.Context, addr string, port uint, handler http.Handler) erro
 			return ctx
 		},
 	}
+	return runServe(ctx, log, &srv)
+}
+
+func runServe(ctx context.Context, log zerolog.Logger, srv *http.Server) error {
 	ctx, cancel := context.WithCancel(ctx)
 	shutdownComplete := make(chan struct{})
 
@@ -36,7 +57,7 @@ func Run(ctx context.Context, addr string, port uint, handler http.Handler) erro
 		cancel()
 	}()
 
-	log.Info().Str("addr", addr).Uint("port", port).Msg("Starting server")
+	log.Info().Msg("Starting server")
 	err := srv.ListenAndServe()
 	cancel()
 	if errors.Is(err, http.ErrServerClosed) {
