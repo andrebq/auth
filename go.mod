@@ -3,6 +3,7 @@ module github.com/andrebq/auth
 go 1.19
 
 require (
+	github.com/dghubble/sling v1.4.1
 	github.com/google/uuid v1.3.0
 	github.com/rs/zerolog v1.28.0
 	github.com/steinfletcher/apitest v1.5.14
@@ -17,6 +18,7 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
