@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/dghubble/sling v1.4.1
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/websocket v1.5.0
 	github.com/rs/zerolog v1.28.0
 	github.com/steinfletcher/apitest v1.5.14
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
