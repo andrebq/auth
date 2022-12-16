@@ -1,4 +1,4 @@
-.PHONY: dist test run apitest build-linux-amd64
+.PHONY: dist test run apitest build-linux
 .SILENT: apitest
 
 test:
@@ -8,10 +8,13 @@ dist: test
 	mkdir -p dist
 	go build -o dist/auth ./cmd/auth
 
-build-linux-amd64:
+build-linux: dist
 	mkdir -p dist/linux-amd64
+	mkdir -p dist/linux-arm64
 	docker buildx build --load --platform linux/amd64 -t andrebq/auth:build-linux-amd64 -f ./dockerfiles/Build.Dockerfile .
-	docker run --platform linux/amd64 --rm --entrypoint bash andrebq/auth:build-linux-amd64 -c 'cat /usr/local/bin/auth' > ./dist/linux-amd64/auth
+	docker buildx build --load --platform linux/arm64 -t andrebq/auth:build-linux-arm64 -f ./dockerfiles/Build.Dockerfile .
+	docker run --platform linux/amd64 --rm --entrypoint bash andrebq/auth:build-linux-amd64 -c 'cat /usr/local/bin/auth' > ./dist/linux-amd64/auth-linux-amd64
+	docker run --platform linux/arm64 --rm --entrypoint bash andrebq/auth:build-linux-arm64 -c 'cat /usr/local/bin/auth' > ./dist/linux-arm64/auth-linux-arm64
 
 run: dist
 	mkdir -p ./localfiles/var/auth
