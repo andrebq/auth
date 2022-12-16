@@ -7,6 +7,7 @@ import (
 
 	"github.com/andrebq/auth/cmd/auth/cmdlib/ctl"
 	"github.com/andrebq/auth/cmd/auth/cmdlib/hub"
+	"github.com/andrebq/auth/cmd/auth/cmdlib/install"
 	"github.com/andrebq/auth/cmd/auth/cmdlib/proxy"
 	"github.com/andrebq/auth/cmd/auth/cmdlib/serve"
 	"github.com/urfave/cli/v2"
@@ -31,6 +32,7 @@ func NewApp(output io.Writer, input io.Reader) *cli.App {
 			serve.Cmd(&dir),
 			proxy.Cmd(),
 			hub.Cmd(),
+			install.Cmd(output),
 		},
 	}
 }
