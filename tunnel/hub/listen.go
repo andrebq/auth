@@ -2,6 +2,7 @@ package hub
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -11,6 +12,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/andrebq/auth/internal/ctxcloser"
 	"github.com/gorilla/websocket"
 )
 
@@ -32,15 +34,15 @@ var (
 	signalPacket = []byte("GREENLIGHT")
 )
 
-func Dial(ws, token, tunnelID string) (net.Conn, error) {
-	return dial(ws, token, tunnelID, false)
+func Dial(ctx context.Context, ws, token, tunnelID string) (net.Conn, error) {
+	return dial(ctx, ws, token, tunnelID, false)
 }
 
-func Accept(ws, token, tunnelID string) (net.Conn, error) {
-	return dial(ws, token, tunnelID, true)
+func Accept(ctx context.Context, ws, token, tunnelID string) (net.Conn, error) {
+	return dial(ctx, ws, token, tunnelID, true)
 }
 
-func dial(wsBase, token, tunnelID string, listener bool) (net.Conn, error) {
+func dial(ctx context.Context, wsBase, token, tunnelID string, listener bool) (net.Conn, error) {
 	wsURL, err := url.Parse(wsBase)
 	if err != nil {
 		return nil, err
@@ -55,12 +57,11 @@ func dial(wsBase, token, tunnelID string, listener bool) (net.Conn, error) {
 	wsURL.RawQuery = values.Encode()
 	headers := http.Header{}
 	headers.Add("Authorization", fmt.Sprintf("Bearer %v", token))
-	wsConn, _, err := websocket.DefaultDialer.Dial(wsURL.String(), headers)
+	wsConn, _, err := websocket.DefaultDialer.DialContext(ctx, wsURL.String(), headers)
 	if err != nil {
 		return nil, err
 	}
-	println("waiting for signal", "is listener?", listener)
-	err = waitForSignal(wsConn)
+	err = waitForSignal(ctx, wsConn)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +172,8 @@ func (ta tunnelAddr) String() string {
 	return fmt.Sprintf("listen:%v:%v:%v", ta.tunnelID, ta.ws.RemoteAddr(), ta.ws.LocalAddr())
 }
 
-func waitForSignal(conn *websocket.Conn) error {
+func waitForSignal(ctx context.Context, conn *websocket.Conn) error {
+	exit, _ := ctxcloser.WhenDone(ctx, conn)
 	for {
 		err := conn.SetReadDeadline(time.Now().Add(time.Minute))
 		if err != nil {
@@ -186,6 +188,7 @@ func waitForSignal(conn *websocket.Conn) error {
 			continue
 		}
 		if bytes.Equal(data, signalPacket) {
+			close(exit)
 			return nil
 		}
 	}

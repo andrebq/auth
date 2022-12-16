@@ -22,7 +22,7 @@ import (
 // It will only stop once hub.Accept fails
 func RemoteToLocal(ctx context.Context, wsBase, token, tunnelID string, dialer func(context.Context) (net.Conn, error)) error {
 	for {
-		conn, err := hub.Accept(wsBase, token, tunnelID)
+		conn, err := hub.Accept(ctx, wsBase, token, tunnelID)
 		if err != nil {
 			return err
 		}

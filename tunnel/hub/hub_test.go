@@ -1,6 +1,7 @@
 package hub_test
 
 import (
+	"context"
 	"io"
 	"net/http/httptest"
 	"strings"
@@ -25,9 +26,10 @@ func TestHub(t *testing.T) {
 
 	gotPing, gotPong := make(chan error, 1), make(chan error, 1)
 
+	ctx := context.Background()
 	tunnelServer := func(out chan error) {
 		defer close(out)
-		conn, err := hub.Accept(wsBase, "change-for-a-valid-token", "tunnel-01")
+		conn, err := hub.Accept(ctx, wsBase, "change-for-a-valid-token", "tunnel-01")
 		if err != nil {
 			out <- err
 			return
@@ -49,7 +51,7 @@ func TestHub(t *testing.T) {
 
 	tunnelClient := func(out chan error) {
 		defer close(out)
-		conn, err := hub.Dial(wsBase, "change-for-another-valid-token", "tunnel-01")
+		conn, err := hub.Dial(ctx, wsBase, "change-for-another-valid-token", "tunnel-01")
 		if err != nil {
 			out <- err
 			return

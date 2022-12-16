@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 
+	"github.com/andrebq/auth/internal/ctxcloser"
 	"github.com/andrebq/auth/tunnel/hub"
 )
 
@@ -12,12 +13,13 @@ import (
 //
 // It only returns when lst.Accept returns an error
 func LocalToRemote(ctx context.Context, lst net.Listener, wsBase, token, tunnelID string) error {
+	_, _ = ctxcloser.WhenDone(ctx, lst)
 	for {
 		conn, err := lst.Accept()
 		if err != nil {
 			return err
 		}
-		remote, err := hub.Dial(wsBase, token, tunnelID)
+		remote, err := hub.Dial(ctx, wsBase, token, tunnelID)
 		if err != nil {
 			conn.Close()
 			continue
