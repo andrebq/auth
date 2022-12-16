@@ -23,6 +23,8 @@ func systemdCmd(output io.Writer) *cli.Command {
 		Usage: "Generate systemd unit files and prints them to stdout",
 		Subcommands: []*cli.Command{
 			authCmd(output),
+			proxyCmd(output),
+			hubCmd(output),
 		},
 	}
 }
@@ -35,6 +37,66 @@ func authCmd(output io.Writer) *cli.Command {
 		Flags: ac.Flags(),
 		Action: func(ctx *cli.Context) error {
 			return ac.Render(output)
+		},
+	}
+}
+
+func proxyCmd(output io.Writer) *cli.Command {
+	pc := systemd.ProxyConfig{}
+	return &cli.Command{
+		Name:  "proxy",
+		Usage: "Generate a unit service for the auth proxy command",
+		Flags: pc.Flags(),
+		Action: func(ctx *cli.Context) error {
+			return pc.Render(output)
+		},
+	}
+}
+
+func hubCmd(output io.Writer) *cli.Command {
+	return &cli.Command{
+		Name:  "hub",
+		Usage: "Generate unit-services for hub subcommands",
+		Subcommands: []*cli.Command{
+			hubExposeCmd(output),
+			hubDialCmd(output),
+			hubServeCmd(output),
+		},
+	}
+}
+
+func hubServeCmd(output io.Writer) *cli.Command {
+	hsc := systemd.HubServeConfig{}
+	return &cli.Command{
+		Name:  "serve",
+		Usage: "Generate unit-services for hub serve",
+		Flags: hsc.Flags(),
+		Action: func(ctx *cli.Context) error {
+			return hsc.Render(output)
+		},
+	}
+}
+
+func hubExposeCmd(output io.Writer) *cli.Command {
+	hec := systemd.HubExposeConfig{}
+	return &cli.Command{
+		Name:  "expose",
+		Usage: "Generate unit-services for hub expose",
+		Flags: hec.Flags(),
+		Action: func(ctx *cli.Context) error {
+			return hec.Render(output)
+		},
+	}
+}
+
+func hubDialCmd(output io.Writer) *cli.Command {
+	hdc := systemd.HubDialConfig{}
+	return &cli.Command{
+		Name:  "dial",
+		Usage: "Generate unit-services for hub dial",
+		Flags: hdc.Flags(),
+		Action: func(ctx *cli.Context) error {
+			return hdc.Render(output)
 		},
 	}
 }

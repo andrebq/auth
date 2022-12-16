@@ -42,16 +42,6 @@ func (a *AuthConfig) Render(out io.Writer) error {
 	return renderTemplate(out, authUnit, "unit", a)
 }
 
-func renderTemplate(out io.Writer, tmpl *template.Template, name string, data interface{}) error {
-	buf := bytes.Buffer{}
-	err := tmpl.ExecuteTemplate(&buf, name, data)
-	if err != nil {
-		return err
-	}
-	_, err = out.Write(bytes.TrimLeftFunc(buf.Bytes(), unicode.IsSpace))
-	return err
-}
-
 func (a *AuthConfig) Flags() []cli.Flag {
 	a.setDefaults()
 	return []cli.Flag{
@@ -99,4 +89,14 @@ func uintFlag(out *uint, name string, usage string) *cli.UintFlag {
 		Required:    (*out == 0),
 		Value:       *out,
 	}
+}
+
+func renderTemplate(out io.Writer, tmpl *template.Template, name string, data interface{}) error {
+	buf := bytes.Buffer{}
+	err := tmpl.ExecuteTemplate(&buf, name, data)
+	if err != nil {
+		return err
+	}
+	_, err = out.Write(bytes.TrimLeftFunc(buf.Bytes(), unicode.IsSpace))
+	return err
 }
