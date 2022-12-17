@@ -22,9 +22,24 @@ func systemdCmd(output io.Writer) *cli.Command {
 		Name:  "systemd",
 		Usage: "Generate systemd unit files and prints them to stdout",
 		Subcommands: []*cli.Command{
+			unitFileCmd(output),
 			authCmd(output),
 			proxyCmd(output),
 			hubCmd(output),
+		},
+	}
+}
+
+func unitFileCmd(output io.Writer) *cli.Command {
+	ufc := systemd.UnitFileConfig{}
+	return &cli.Command{
+		Name:  "unit-file",
+		Usage: "Render the path to a unit file with the given name",
+		Flags: ufc.Flags(),
+		Action: func(ctx *cli.Context) error {
+			err := ufc.Render(output)
+			io.WriteString(output, "\n")
+			return err
 		},
 	}
 }
