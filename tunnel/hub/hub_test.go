@@ -11,8 +11,16 @@ import (
 	"github.com/andrebq/auth/tunnel/hub"
 )
 
+type (
+	noopTokenValidator struct{}
+)
+
+func (n noopTokenValidator) ValidateToken(_ context.Context, token string) (string, string, error) {
+	return token, "machine", nil
+}
+
 func TestHub(t *testing.T) {
-	h, err := hub.NewHub()
+	h, err := hub.NewHub(noopTokenValidator{})
 	if err != nil {
 		t.Fatal(err)
 	}

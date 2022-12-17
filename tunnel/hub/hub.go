@@ -2,6 +2,7 @@ package hub
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 	"sync"
@@ -12,8 +13,13 @@ import (
 
 type (
 	H struct {
-		lock  sync.Mutex
-		dials map[string]chan dialState
+		lock   sync.Mutex
+		dials  map[string]chan dialState
+		tokens ValidateToken
+	}
+
+	ValidateToken interface {
+		ValidateToken(ctx context.Context, token string) (uid string, tokenType string, err error)
 	}
 
 	dialState struct {
@@ -26,9 +32,13 @@ var (
 	upgrader = websocket.Upgrader{}
 )
 
-func NewHub() (http.Handler, error) {
+func NewHub(tokens ValidateToken) (http.Handler, error) {
 	hub := &H{
-		dials: make(map[string]chan dialState),
+		dials:  make(map[string]chan dialState),
+		tokens: tokens,
+	}
+	if hub.tokens == nil {
+		return nil, errors.New("hub: missing token validator")
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/ws/listen", http.HandlerFunc(hub.handleListen))
@@ -38,7 +48,7 @@ func NewHub() (http.Handler, error) {
 
 func (h *H) handleListen(w http.ResponseWriter, req *http.Request) {
 	tunnelID := req.FormValue("tunnel_id")
-	err := h.validToken(getToken(req), tunnelID)
+	err := h.validToken(req.Context(), getToken(req), tunnelID)
 	if err != nil {
 		http.Error(w, "Not authorized", http.StatusUnauthorized)
 		return
@@ -110,7 +120,7 @@ func (h *H) acquireDialer(tunnelID string) chan dialState {
 
 func (h *H) handleDial(w http.ResponseWriter, req *http.Request) {
 	tunnelID := req.FormValue("tunnel_id")
-	err := h.validToken(getToken(req), tunnelID)
+	err := h.validToken(req.Context(), getToken(req), tunnelID)
 	if err != nil {
 		http.Error(w, "Not authorized", http.StatusUnauthorized)
 		return
@@ -142,8 +152,12 @@ func (h *H) handleDial(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
-func (h *H) validToken(token string, tunnelID string) error {
-	return nil
+func (h *H) validToken(ctx context.Context, token string, tunnelID string) error {
+	if h.tokens == nil {
+		return errors.New("hub: not authorized")
+	}
+	_, _, err := h.tokens.ValidateToken(ctx, token)
+	return err
 }
 
 func getToken(req *http.Request) string {

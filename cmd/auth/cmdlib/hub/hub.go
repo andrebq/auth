@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/andrebq/auth/client"
 	"github.com/andrebq/auth/internal/httpserver"
 	"github.com/andrebq/auth/tunnel/hub"
 	"github.com/andrebq/auth/tunnel/hub/proxy"
@@ -52,7 +53,8 @@ func serveCmd() *cli.Command {
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			h, err := hub.NewHub()
+			authcli := client.New(authEndpoint)
+			h, err := hub.NewHub(authcli)
 			if err != nil {
 				return err
 			}
