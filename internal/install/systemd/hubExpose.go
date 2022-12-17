@@ -28,7 +28,7 @@ Description={{.Description}}
 
 [Service]
 ExecStart={{.Binary}} hub expose --hub {{.HubEndpoint}} --token "{{.Token}}" -t {{.TunnelID}} --local-addr {{.Local}}
-Restart=true
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

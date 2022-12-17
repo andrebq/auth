@@ -29,7 +29,7 @@ Description={{.Description}}
 
 [Service]
 ExecStart={{.Binary}} --data-dir "{{.Datadir}}" serve api --port {{.Port}} --bind {{.Bind}}
-Restart=true
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

@@ -28,7 +28,7 @@ Description={{.Description}}
 
 [Service]
 ExecStart={{.Binary}} proxy --upstream {{.Upstream}} --port {{.Port}} --addr {{.Bind}} --auth-endpoint {{.AuthEndpoint}}
-Restart=true
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

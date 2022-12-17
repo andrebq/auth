@@ -29,7 +29,7 @@ Description={{.Description}}
 
 [Service]
 ExecStart={{.Binary}} hub dial --hub {{.HubEndpoint}} --bind {{.Bind}} --port {{.Port}} --token {{.Token}} -t {{.TunnelID}}
-Restart=true
+Restart=always
 
 [Install]
 WantedBy=multi-user.target

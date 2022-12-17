@@ -27,7 +27,7 @@ Description={{.Description}}
 
 [Service]
 ExecStart={{.Binary}} hub serve --auth-endpoint {{.AuthEndpoint}} --bind {{.Bind}} --port {{.Port}}
-Restart=true
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
