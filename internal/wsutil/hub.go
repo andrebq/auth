@@ -2,9 +2,9 @@ package wsutil
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -14,6 +14,7 @@ type (
 	}
 
 	ChanLike interface {
+		ID() [16]byte
 		Read() <-chan []byte
 		Done() <-chan struct{}
 		Write() chan<- []byte
@@ -21,6 +22,7 @@ type (
 
 	pkt struct {
 		src     ChanLike
+		to      [16]byte
 		content []byte
 	}
 )
@@ -35,19 +37,24 @@ func NewHub() *Hub {
 	}
 }
 
-func (h *Hub) Register(c ChanLike) {
+func (h *Hub) Register(c ChanLike, endpoint [16]byte) {
 	h.newChan <- c
 }
 
 func (h *Hub) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	endpointID, err := uuid.Parse(req.FormValue("endpoint_id"))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 	conn, err := upgrader.Upgrade(w, req, nil)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	ch := NewChan(conn)
+	ch := NewChan(conn, endpointID)
 	go ch.Loop()
-	h.Register(ch)
+	h.Register(ch, endpointID)
 	select {
 	case <-req.Context().Done():
 	case <-ch.Done():
@@ -65,13 +72,11 @@ func (h *Hub) Run(ctx context.Context) error {
 			nodes[ch] = signal{}
 		case pkt := <-broadcast:
 			for k := range nodes {
-				if k == pkt.src {
+				if k == pkt.src || k.ID() != pkt.to {
 					continue
 				}
-				println("sending", string(pkt.content), "to", fmt.Sprintf("%p", k))
 				select {
 				case k.Write() <- pkt.content:
-					println("sent", string(pkt.content), "to", fmt.Sprintf("%p", k))
 				case <-k.Done():
 					delete(nodes, k)
 				default:
@@ -97,8 +102,12 @@ func (h *Hub) handleChan(ctx context.Context, ch ChanLike, bd chan pkt) {
 		case <-ctx.Done():
 			return
 		case data := <-ch.Read():
-			println("got", string(data), "from", fmt.Sprintf("%p", ch))
-			bd <- pkt{content: data, src: ch}
+			if len(data) < 16 {
+				continue
+			}
+			p := pkt{content: data, src: ch}
+			copy(p.to[:], data[:16])
+			bd <- p
 		}
 	}
 }

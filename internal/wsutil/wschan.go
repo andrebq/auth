@@ -17,6 +17,7 @@ type (
 		done  chan struct{}
 		ping  chan signal
 		ws    *websocket.Conn
+		id    [16]byte
 
 		downstream chan []byte
 		upstream   chan []byte
@@ -25,8 +26,9 @@ type (
 	signal struct{}
 )
 
-func NewChan(ws *websocket.Conn) *Chan {
+func NewChan(ws *websocket.Conn, id [16]byte) *Chan {
 	ch := Chan{
+		id:         id,
 		stop:       make(chan signal),
 		done:       make(chan struct{}),
 		ping:       make(chan signal),
@@ -35,6 +37,10 @@ func NewChan(ws *websocket.Conn) *Chan {
 		upstream:   make(chan []byte),
 	}
 	return &ch
+}
+
+func (c *Chan) ID() [16]byte {
+	return c.id
 }
 
 func (c *Chan) Close() error {

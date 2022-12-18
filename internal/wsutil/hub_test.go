@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/andrebq/auth/internal/wsutil"
+	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 )
 
@@ -22,27 +23,52 @@ func TestHub(t *testing.T) {
 	u, _ := url.Parse(server.URL)
 	u.Scheme = "ws"
 
-	alice := dial(t, u.String())
+	root, err := uuid.NewRandom()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	alice := dial(t, u, uuid.NewSHA1(root, []byte("alice")))
 	go alice.Loop()
 
-	bob := dial(t, u.String())
+	bob := dial(t, u, uuid.NewSHA1(root, []byte("bob")))
 	go bob.Loop()
 
-	alice.Write() <- []byte("hello")
+	tom := dial(t, u, uuid.NewSHA1(root, []byte("tom")))
+	go tom.Loop()
+
+	id := bob.ID()
+
+	alice.Write() <- append(id[:], []byte("hello")...)
 	select {
 	case <-ctx.Done():
 		t.Fatal("I give up!")
 	case buf := <-bob.Read():
-		if !bytes.Equal(buf, []byte("hello")) {
+		if !bytes.HasSuffix(buf, []byte("hello")) {
 			t.Fatal("wtf!")
 		}
+	case <-tom.Read():
+		t.Fatal("Nobody sent messages to tom!")
+	}
+	select {
+	case <-ctx.Done():
+	case buf := <-bob.Read():
+		if !bytes.HasSuffix(buf, []byte("hello")) {
+			t.Fatal("wtf!")
+		}
+	case <-tom.Read():
+		t.Fatal("Nobody sent messages to tom!")
 	}
 }
 
-func dial(t *testing.T, str string) *wsutil.Chan {
-	conn, _, err := websocket.DefaultDialer.Dial(str, nil)
+func dial(t *testing.T, u *url.URL, id uuid.UUID) *wsutil.Chan {
+	copy := *u
+	qs := copy.Query()
+	qs.Add("endpoint_id", id.String())
+	copy.RawQuery = qs.Encode()
+	conn, _, err := websocket.DefaultDialer.Dial(copy.String(), nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return wsutil.NewChan(conn)
+	return wsutil.NewChan(conn, id)
 }
