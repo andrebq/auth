@@ -44,6 +44,7 @@ func (p *ProxyConfig) Render(out io.Writer) error {
 func (p *ProxyConfig) Flags() []cli.Flag {
 	p.setDefaults()
 	return []cli.Flag{
+		stringFlag(&p.Description, "description", "Description of this proxy"),
 		stringFlag(&p.AuthEndpoint, "auth-endpoint", "Endpoint where auth API is running"),
 		stringFlag(&p.Binary, "binary", "Path to auth binary"),
 		stringFlag(&p.Upstream, "upstream", "Upstream server to proxy requests to"),
