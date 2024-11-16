@@ -11,7 +11,7 @@ require (
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
 	github.com/uptrace/bun/driver/sqliteshim v1.1.9
 	github.com/urfave/cli/v2 v2.23.7
-	golang.org/x/crypto v0.4.0
+	golang.org/x/crypto v0.17.0
 )
 
 require (
@@ -28,7 +28,7 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/tools v0.3.0 // indirect
 	lukechampine.com/uint128 v1.2.0 // indirect
 	modernc.org/cc/v3 v3.40.0 // indirect
