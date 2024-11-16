@@ -1,5 +1,5 @@
 .PHONY: dist test run apitest build-linux
-.SILENT: apitest
+.SILENT: apitest release-rc
 
 test:
 	go test ./...
@@ -15,6 +15,16 @@ build-linux: dist
 	docker buildx build --load --platform linux/arm64 -t andrebq/auth:build-linux-arm64 -f ./dockerfiles/Build.Dockerfile .
 	docker run --platform linux/amd64 --rm --entrypoint bash andrebq/auth:build-linux-amd64 -c 'cat /usr/local/bin/auth' > ./dist/linux-amd64/auth-linux-amd64
 	docker run --platform linux/arm64 --rm --entrypoint bash andrebq/auth:build-linux-arm64 -c 'cat /usr/local/bin/auth' > ./dist/linux-arm64/auth-linux-arm64
+
+release-rc: build-linux
+	[[ -n "$(rc)" ]] || { echo "Missing rc=<value> argument"; exit 1; }
+	[[ -n "$(semver)" ]] || { echo "Missing rc=<value> argument"; exit 1; }
+	rm -rf dist/v$(semver)-rc$(rc)
+	mkdir -p dist/v$(semver)-rc$(rc)/
+	cp -v dist/linux-amd64/auth-linux-amd64 dist/v$(semver)-rc$(rc)/
+	cp -v dist/linux-arm64/auth-linux-arm64 dist/v$(semver)-rc$(rc)/
+	gh release create v$(semver)-rc$(rc) dist/v$(semver)-rc$(rc)/*
+
 
 run: dist
 	mkdir -p ./localfiles/var/auth

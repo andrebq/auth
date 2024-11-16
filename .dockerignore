@@ -3,3 +3,4 @@ dist
 dockerfiles
 localfiles
 .DS_Store
+scripts
