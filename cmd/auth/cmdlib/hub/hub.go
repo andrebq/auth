@@ -28,10 +28,17 @@ func serveCmd() *cli.Command {
 	var authEndpoint string = "http://localhost:18001/"
 	var addr string = "127.0.0.1"
 	var port uint = 18003
+	var internetFacing bool
 	return &cli.Command{
 		Name:  "serve",
 		Usage: "Runs the hub server that creates tunnels",
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "internet-facing",
+				Usage:       "Indicates if this hub is directly facing the public internet and should be protected as such",
+				Destination: &internetFacing,
+				Value:       internetFacing,
+			},
 			&cli.StringFlag{
 				Name:        "auth-endpoint",
 				Aliases:     []string{"ae"},
@@ -58,7 +65,7 @@ func serveCmd() *cli.Command {
 			if err != nil {
 				return err
 			}
-			return httpserver.RunProxy(ctx.Context, addr, port, h)
+			return httpserver.RunProxy(ctx.Context, internetFacing, addr, port, h)
 		},
 	}
 }

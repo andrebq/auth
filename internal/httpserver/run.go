@@ -12,7 +12,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func RunProxy(ctx context.Context, addr string, port uint, handler http.Handler) error {
+// RunProxy starts the HTTP server that proxy authenticated requests to their backend
+// when internetFacing is true, this proxy has very strict timeouts and limits,
+// otherwise it will not have any limits and such protections should be handled by
+// a reverse-proxy in front of auth and by downstream services that should close the
+// connection.
+func RunProxy(ctx context.Context, internetFacing bool, addr string, port uint, handler http.Handler) error {
 	log := log.Logger.With().Str("addr", addr).Uint("port", port).Str("kind", "proxy").Logger()
 	srv := http.Server{
 		Addr:              fmt.Sprintf("%v:%v", addr, port),
@@ -24,6 +29,12 @@ func RunProxy(ctx context.Context, addr string, port uint, handler http.Handler)
 		BaseContext: func(l net.Listener) context.Context {
 			return ctx
 		},
+	}
+	if !internetFacing {
+		srv.ReadTimeout = 0
+		srv.WriteTimeout = 0
+		srv.ReadHeaderTimeout = 0
+		srv.MaxHeaderBytes = 0
 	}
 	return runServe(ctx, log, &srv)
 }

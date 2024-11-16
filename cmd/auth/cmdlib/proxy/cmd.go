@@ -11,10 +11,17 @@ func Cmd() *cli.Command {
 	var authEndpoint string = "http://localhost:18001"
 	var bind string = "localhost"
 	var port uint = 18002
+	var internetFacing bool
 	return &cli.Command{
 		Name:  "proxy",
 		Usage: "Proxy requets to enforce authentication via cookies",
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:        "internet-facing",
+				Usage:       "Indicates if this hub is directly facing the public internet and should be protected as such",
+				Destination: &internetFacing,
+				Value:       internetFacing,
+			},
 			&cli.UintFlag{
 				Name:        "port",
 				Usage:       "Port to bind for incoming connections",
@@ -45,7 +52,7 @@ func Cmd() *cli.Command {
 			if err != nil {
 				return err
 			}
-			return httpserver.RunProxy(ctx.Context, bind, port, handler)
+			return httpserver.RunProxy(ctx.Context, internetFacing, bind, port, handler)
 		},
 	}
 }
